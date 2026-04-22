@@ -20,13 +20,13 @@ jobs:
             CODE_SIGN_IDENTITY="" \
             CODE_SIGNING_REQUIRED=NO \
             CODE_SIGNING_ALLOWED=NO \
-            DSTROOT=$(pwd)/build \
-            INSTALL_PATH=/
+            -derivedDataPath build_output
 
       - name: Package into IPA
         run: |
           mkdir -p Payload
-          mv build/iOS-Depth-Sampler.app Payload/
+          # Automatically find the .app file in the Release folder and move it
+          mv build_output/Build/Products/Release-iphoneos/*.app Payload/
           zip -r iOS-Depth-Sampler.ipa Payload
 
       - name: Upload IPA Artifact
