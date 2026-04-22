@@ -6,35 +6,31 @@ on:
 jobs:
   build:
     runs-on: macos-latest
-
     steps:
-      - name: Checkout code
+      - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Install CocoaPods dependencies
-        run: pod install --repo-update
-        continue-on-error: true  # Pods folder is already committed, so this may be skipped
-
-      - name: Build Archive
+      - name: Build Xcode Project
         run: |
-          xcodebuild archive \
-            -workspace iOS-Depth-Sampler.xcworkspace \
-            -scheme iOS-Depth-Sampler \
+          xcodebuild clean build \
+            -workspace "iOS-Depth-Sampler.xcworkspace" \
+            -scheme "iOS-Depth-Sampler" \
             -configuration Release \
-            -archivePath ./build/iOS-Depth-Sampler.xcarchive \
-            -destination "generic/platform=iOS" \
-            CODE_SIGNING_ALLOWED=NO
+            -sdk iphoneos \
+            CODE_SIGN_IDENTITY="" \
+            CODE_SIGNING_REQUIRED=NO \
+            CODE_SIGNING_ALLOWED=NO \
+            DSTROOT=$(pwd)/build \
+            INSTALL_PATH=/
 
-      - name: Export IPA
+      - name: Package into IPA
         run: |
-          xcodebuild -exportArchive \
-            -archivePath ./build/iOS-Depth-Sampler.xcarchive \
-            -exportPath ./build/output \
-            -exportOptionsPlist ExportOptions.plist \
-            CODE_SIGNING_ALLOWED=NO
+          mkdir -p Payload
+          mv build/iOS-Depth-Sampler.app Payload/
+          zip -r iOS-Depth-Sampler.ipa Payload
 
-      - name: Upload IPA artifact
+      - name: Upload IPA Artifact
         uses: actions/upload-artifact@v4
         with:
           name: iOS-Depth-Sampler-IPA
-          path: ./build/output/*.ipa
+          path: iOS-Depth-Sampler.ipa
