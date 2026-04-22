@@ -23,7 +23,15 @@ jobs:
             -configuration Release \
             -archivePath ./build/iOS-Depth-Sampler.xcarchive \
             -destination "generic/platform=iOS" \
-            CODE_SIGNING_ALLOWED=NO
+            CODE_SIGNING_ALLOWED=NO 2>&1 | tee build.log
+          exit ${PIPESTATUS[0]}
+
+      - name: Upload build log
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-log
+          path: build.log
 
       - name: Export IPA
         run: |
